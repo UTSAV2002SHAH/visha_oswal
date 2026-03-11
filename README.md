@@ -1,20 +1,60 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Visha Oswal - Community Platform MVP
 
-# Run and deploy your AI Studio app
+A modern, responsive Next.js application designed for community engagement, featuring a family tree, event management, and advanced search capabilities.
 
-This contains everything you need to run your app locally.
+## 🚀 Features
 
-View your app in AI Studio: https://ai.studio/apps/drive/1gyXTmmpChNRi32-YPS0Oc5iX-8tKxyce
+- **Family Tree**: interactive pedigree-style visualization of community lineages.
+- **Events Management**: Comprehensive event listing with filtering and slug-based detail pages.
+- **Advanced Search**: Optimized search experience with mobile-friendly filters.
+- **Modern UI**: Built with React, Next.js, and Tailwind CSS for a premium, responsive feel.
 
-## Run Locally
+## 🛠️ Tech Stack
 
-**Prerequisites:**  Node.js
+- **Framework**: [Next.js](https://nextjs.org/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Database**: [MongoDB](https://www.mongodb.com/)
+- **AI Integration**: Google Gemini API
 
+## 🏁 Getting Started
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### Prerequisites
+
+- Node.js 18.x or later
+- MongoDB instance
+
+### Installation
+
+1. **Clone the repository**:
+
+   ```bash
+   git clone <repository-url>
+   cd vo_nextApp
+   ```
+
+2. **Install dependencies**:
+
+   ```bash
+   npm install
+   ```
+
+3. **Configure Environment**:
+
+   Create a `.env.local` file and add your credentials:
+
+   ```env
+   MONGODB_URI=your_mongodb_uri
+   GEMINI_API_KEY=your_gemini_api_key
+   ```
+
+4. **Run Development Server**:
+
+   ```bash
+   npm run dev
+   ```
+
+Open [http://localhost:3000](http://localhost:3000) to see the result.
+
+## 📄 License
+
+This project is licensed under the MIT License.
