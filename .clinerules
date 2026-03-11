@@ -1,0 +1,35 @@
+# Visha Oswal Project Development Rules
+
+## 🎨 Design System & Aesthetics
+- **Theme**: Premium social platform for the Jain community.
+- **Primary Color**: Saffron/Orange (#FF9933) - represents community identity.
+- **Secondary Colors**: Slate/White - for a clean, professional, and modern feel.
+- **Vibe**: High-end, premium, and sophisticated.
+- **Interactions**: Use glassmorphism, smooth gradients, subtle micro-animations, and interactive hover states. No basic or "MVP-looking" components.
+- **Typography**: Modern, clean sans-serif fonts (e.g., Inter, Outfit, or Roboto).
+
+## 🛠 Tech Stack
+- **Framework**: Next.js (App Router), TypeScript, React.
+- **Styling**: Tailwind CSS + Pure CSS where needed for unique animations.
+- **Database**: MongoDB.
+- **Storage**: Amazon S3 for user-generated content (posts, avatars).
+
+## 🧪 Testing & Verification
+- **Login Credentials**: Always use:
+  - **Email**: `testuser1@gmail.com`
+  - **Password**: `Utsav1712Shah`
+- **Anti-Loop**: Detect and break circular testing loops (e.g., repeated login/logout to find a toast). If an element is missing, stop and debug the logic. **Do not create new test users.**
+
+## 📐 Professional Standards
+- **Industry Way**: Plan features as an experienced lead developer using standard patterns. Provide references for implementation choices.
+- **Code Hygiene**: Proactively remove dead code, temporary comments, and console logs.
+- **Housekeeping**: Identify redundant files created during implementation changes and notify the user to remove them.
+
+## 🚀 Workflow Rules
+- **Planning**: Before implementing any major feature, create an `implementation_plan.md`.
+- **Responsive Design**: All features must be Mobile-First and fully responsive.
+- **Image Optimization**: Use `next/image` for performance optimization.
+- **Security**: Never hardcode credentials. Use environment variables.
+
+## 🤝 Community Focus
+- Ensure the UI and content are culturally respectful and tailored to the Jain community values.
