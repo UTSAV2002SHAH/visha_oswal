@@ -36,3 +36,10 @@ build/
 journal.md
 context.md
 rules.md
+
+# PWA
+public/sw.js
+public/workbox-*.js
+public/sw.js.map
+public/workbox-*.js.map
+public/swe-worker-*.js

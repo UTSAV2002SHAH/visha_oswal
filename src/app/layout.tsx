@@ -30,7 +30,7 @@
 //   );
 // }
 
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { AppProvider } from "@/context/AppContext";
 import AppNavbar from "@/components/layout/Navbar";
@@ -42,9 +42,19 @@ import { ThemeProvider } from "@/context/ThemeContext";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
+export const viewport: Viewport = {
+  themeColor: "#0f172a",
+};
+
 export const metadata: Metadata = {
   title: "Visha Oswal Community",
   description: "Official community platform for Visha Oswal members. Connect, share, and grow together.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Visha Oswal",
+  },
 };
 
 import { GoogleAuthProviderWrapper } from "@/components/features/auth/GoogleAuthProviderWrapper";
