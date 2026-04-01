@@ -4,6 +4,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { createPortal } from 'react-dom';
 import { useAppContext } from '@/context/AppContext';
+import { fetchWithAuth } from '@/lib/utils/fetchWithAuth';
 
 interface Post {
     _id: string;
@@ -61,10 +62,8 @@ const PostDetailModal: React.FC<PostDetailModalProps> = ({ post, isOpen, onClose
         if (!window.confirm("Are you sure you want to delete this post?")) return;
 
         try {
-            const token = localStorage.getItem('token');
-            const res = await fetch(`/api/posts/${post._id}`, {
+            const res = await fetchWithAuth(`/api/posts/${post._id}`, {
                 method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
             });
 
             if (res.ok) {

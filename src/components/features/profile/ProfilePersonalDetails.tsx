@@ -8,6 +8,7 @@ import { UserIcon } from '@/components/ui/icons/UserIcon';
 import { ProfileDateSelector } from '@/components/ui/ProfileDateSelector';
 import { isProfileComplete } from '@/utils/profile-validation';
 import toast from 'react-hot-toast';
+import { fetchWithAuth } from '@/lib/utils/fetchWithAuth';
 
 interface PersonalDetails {
     fullName: string;
@@ -21,23 +22,32 @@ interface PersonalDetails {
 
 interface ProfilePersonalDetailsProps {
     isOwnProfile: boolean;
+    data?: PersonalDetails;
     onUpdate?: () => void;
 }
 
-export const ProfilePersonalDetails: React.FC<ProfilePersonalDetailsProps> = ({ isOwnProfile, onUpdate }) => {
-    const [isLoading, setIsLoading] = useState(true);
+export const ProfilePersonalDetails: React.FC<ProfilePersonalDetailsProps> = ({ isOwnProfile, data, onUpdate }) => {
+    const [isLoading, setIsLoading] = useState(!data);
     const [isEditing, setIsEditing] = useState(false);
-    const [profile, setProfile] = useState<PersonalDetails | null>(null);
-    const [formData, setFormData] = useState<PersonalDetails | null>(null);
+    const [profile, setProfile] = useState<PersonalDetails | null>(data || null);
+    const [formData, setFormData] = useState<PersonalDetails | null>(data || null);
     const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
     const fetchProfile = async () => {
+        if (data) {
+            setIsLoading(false);
+            return;
+        }
+        
+        // If not own profile and no data provided, don't fetch (prevents leaking own data to other profiles)
+        if (!isOwnProfile) {
+            setIsLoading(false);
+            return;
+        }
+
         setIsLoading(true);
         try {
-            const token = localStorage.getItem('token');
-            const res = await fetch('/api/member-profile', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const res = await fetchWithAuth('/api/member-profile');
             if (res.ok) {
                 const data = await res.json();
                 const personal = data.personal || {};
@@ -52,8 +62,18 @@ export const ProfilePersonalDetails: React.FC<ProfilePersonalDetailsProps> = ({ 
     };
 
     useEffect(() => {
-        fetchProfile();
-    }, []);
+        if (data) {
+            setProfile(data);
+            setFormData(data);
+            setIsLoading(false);
+        } else if (isOwnProfile) {
+            fetchProfile();
+        } else {
+            setProfile(null);
+            setFormData(null);
+            setIsLoading(false);
+        }
+    }, [data, isOwnProfile]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -82,13 +102,9 @@ export const ProfilePersonalDetails: React.FC<ProfilePersonalDetailsProps> = ({ 
         }
 
         try {
-            const token = localStorage.getItem('token');
-            const response = await fetch('/api/member-profile', {
+            const response = await fetchWithAuth('/api/member-profile', {
                 method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ personal: formData }),
             });
 

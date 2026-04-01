@@ -3,6 +3,7 @@ import { Modal } from '@/components/shared/Modal';
 import { FormInput } from '../shared/FormInput';
 import { FormButtonControls } from '../shared/FormButtonControls';
 import toast from 'react-hot-toast';
+import { fetchWithAuth } from '@/lib/utils/fetchWithAuth';
 
 interface ProfileInfoEditModalProps {
     isOpen: boolean;
@@ -35,11 +36,9 @@ export const ProfileInfoEditModal: React.FC<ProfileInfoEditModalProps> = ({
 
     const handleSave = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await fetch('/api/users/me', {
+            const response = await fetchWithAuth('/api/users/me', {
                 method: 'PUT',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(formData),

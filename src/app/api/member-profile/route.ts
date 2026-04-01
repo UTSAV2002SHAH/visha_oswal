@@ -3,6 +3,7 @@ import { verifyAuth } from "@/lib/auth";
 import connectDB from "@/lib/db";
 import MemberProfile from "@/lib/models/MemberProfile.model";
 import User from "@/lib/models/User.model";
+import { PersonalDetailsSchema } from "@/lib/validations/profile";
 
 // Define the exact shape of a fresh MemberProfile using our Mongoose schema
 const getEmptyProfile = (userId: string, defaultName: string = "") => ({
@@ -84,6 +85,14 @@ export async function PUT(req: NextRequest) {
             return NextResponse.json({ error: "Personal data is required" }, { status: 400 });
         }
 
+        // Validate personal data
+        const validatedPersonal = PersonalDetailsSchema.safeParse(personal);
+        if (!validatedPersonal.success) {
+            return NextResponse.json({ error: "Invalid personal data", errors: validatedPersonal.error.flatten() }, { status: 400 });
+        }
+
+        const personalData = validatedPersonal.data;
+
         await connectDB();
 
         // Upsert the profile (Update if exists, Create if it doesn't)
@@ -91,15 +100,7 @@ export async function PUT(req: NextRequest) {
             { userId },
             {
                 $set: {
-                    personal: {
-                        fullName: personal.fullName,
-                        gender: personal.gender,
-                        contactNumber: personal.contactNumber,
-                        dateOfBirth: personal.dateOfBirth,
-                        maritalStatus: personal.maritalStatus,
-                        cityOfOrigin: personal.cityOfOrigin,
-                        currentCity: personal.currentCity,
-                    },
+                    personal: personalData,
                 },
             },
             { new: true, upsert: true, runValidators: true }

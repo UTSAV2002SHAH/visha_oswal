@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from 'next/server';
 import { verifyAuth } from '@/lib/auth';
 import connectDB from '@/lib/db';
 import User, { IEducation } from '@/lib/models/User.model';
+import { EducationSchema } from '@/lib/validations/profile';
 
 interface Params {
     params: { edu_id: string }
@@ -16,6 +17,14 @@ export async function PUT(request: NextRequest, { params }: Params) {
         const userPayload = verifyAuth(request);
         const body = await request.json();
 
+        // Validate input
+        const validatedData = EducationSchema.safeParse(body);
+        if (!validatedData.success) {
+            return NextResponse.json({ msg: 'Invalid education data', errors: validatedData.error.flatten() }, { status: 400 });
+        }
+        
+        const updateData = validatedData.data;
+
         const user = await User.findById(userPayload.id).select('-passwordHash -authTokens');
         if (!user) {
             return NextResponse.json({ msg: 'User not found' }, { status: 404 });
@@ -26,7 +35,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
             return NextResponse.json({ msg: 'Education entry not found' }, { status: 404 });
         }
         
-        Object.assign(education, body);
+        Object.assign(education, updateData);
         
         await user.save();
         return NextResponse.json(user);

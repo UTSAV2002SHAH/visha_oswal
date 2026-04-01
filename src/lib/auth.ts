@@ -8,15 +8,17 @@ interface UserPayload {
 }
 
 export const verifyAuth = (req: NextRequest): UserPayload['user'] => {
+  // Primary: read from HttpOnly cookie (secure, XSS-safe)
+  const cookieToken = req.cookies.get('auth_token')?.value;
+
+  // Fallback: read from Authorization header (kept during migration, will be removed)
   const authHeader = req.headers.get('Authorization');
+  const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
 
-  if (!authHeader) {
-    throw new Error('No token, authorization denied');
-  }
+  const token = cookieToken || headerToken;
 
-  const token = authHeader.split(' ')[1];
   if (!token) {
-    throw new Error('Token format is invalid, authorization denied');
+    throw new Error('No token, authorization denied');
   }
 
   try {

@@ -10,6 +10,7 @@ import { FamilyMemberModal } from './FamilyMemberModal';
 import { UserIcon } from '@/components/ui/icons/UserIcon';
 import { isProfileComplete } from '@/utils/profile-validation';
 import Link from 'next/link';
+import { fetchWithAuth } from '@/lib/utils/fetchWithAuth';
 
 interface FamilyMember {
     user: string | null;
@@ -42,7 +43,6 @@ export const ProfileFamily: React.FC<ProfileFamilyProps> = ({ profileData, isOwn
     const handleDeleteMember = async (relationType: string, memberId?: string) => {
         if (!confirm(`Are you sure you want to remove this entry?`)) return;
 
-        const token = localStorage.getItem('token');
         try {
             // Map front-end relation names to the backend's [relationType] route param names
             const routeType = relationType === 'father' || relationType === 'mother'
@@ -53,9 +53,8 @@ export const ProfileFamily: React.FC<ProfileFamilyProps> = ({ profileData, isOwn
 
             const deleteUrl = `/api/member-profile/family/${routeType}${memberId ? `?memberId=${memberId}` : ''}`;
 
-            const res = await fetch(deleteUrl, {
+            const res = await fetchWithAuth(deleteUrl, {
                 method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
             });
 
             if (res.ok) {
@@ -79,10 +78,7 @@ export const ProfileFamily: React.FC<ProfileFamilyProps> = ({ profileData, isOwn
                 // If it's another user, we might need to rely on the expanded profileData passed down.
                 // For now, let's fetch our own from /api/member-profile if it's our profile.
                 if (isOwnProfile) {
-                    const token = localStorage.getItem('token');
-                    const res = await fetch('/api/member-profile', {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
+                    const res = await fetchWithAuth('/api/member-profile');
                     if (res.ok) {
                         const data = await res.json();
                         setFamilyData(data.family || { father: null, mother: null, spouse: null, siblings: [], children: [] });

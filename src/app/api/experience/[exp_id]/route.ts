@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from 'next/server';
 import { verifyAuth } from '@/lib/auth';
 import connectDB from '@/lib/db';
 import User, { IExperience } from '@/lib/models/User.model';
+import { ExperienceSchema } from '@/lib/validations/profile';
 
 interface Params {
     params: { exp_id: string }
@@ -15,6 +16,14 @@ export async function PUT(request: NextRequest, { params }: Params) {
         await connectDB();
         const userPayload = verifyAuth(request);
         const body = await request.json();
+
+        // Validate input
+        const validatedData = ExperienceSchema.safeParse(body);
+        if (!validatedData.success) {
+            return NextResponse.json({ msg: 'Invalid experience data', errors: validatedData.error.flatten() }, { status: 400 });
+        }
+        
+        const updateData = validatedData.data;
         
         const user = await User.findById(userPayload.id).select('-passwordHash -authTokens');
         if (!user) {
@@ -26,7 +35,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
             return NextResponse.json({ msg: 'Experience not found' }, { status: 404 });
         }
 
-        Object.assign(experience, body);
+        Object.assign(experience, updateData);
         
         await user.save();
         return NextResponse.json(user);

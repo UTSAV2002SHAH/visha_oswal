@@ -8,6 +8,7 @@ import { getImageUrl } from '@/lib/image-utils';
 import { ProfileCompletionGuard } from '@/components/shared/ProfileCompletionGuard';
 import { useProfileCompleteness } from '@/hooks/useProfileCompleteness';
 import toast from 'react-hot-toast';
+import { fetchWithAuth } from '@/lib/utils/fetchWithAuth';
 
 export const NotificationsPanel: React.FC = () => {
     const { user } = useAppContext();
@@ -20,12 +21,8 @@ export const NotificationsPanel: React.FC = () => {
     const [isGuardOpen, setIsGuardOpen] = useState(false);
 
     const fetchNotifications = async () => {
-        const token = localStorage.getItem('token');
-        if (!token) return;
         try {
-            const res = await fetch('/api/notifications', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const res = await fetchWithAuth('/api/notifications');
             if (res.ok) {
                 const data = await res.json();
                 setNotifications(data);
@@ -59,14 +56,10 @@ export const NotificationsPanel: React.FC = () => {
             setIsGuardOpen(true);
             return;
         }
-        const token = localStorage.getItem('token');
         try {
-            const res = await fetch('/api/notifications', {
+        const res = await fetchWithAuth('/api/notifications', {
                 method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ notificationId, action })
             });
 
@@ -87,11 +80,10 @@ export const NotificationsPanel: React.FC = () => {
             router.push('/profile?tab=family');
         }
         if (!notification.isRead) {
-            const token = localStorage.getItem('token');
             try {
-                await fetch('/api/notifications', {
+                await fetchWithAuth('/api/notifications', {
                     method: 'PATCH',
-                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ notificationId: notification._id, action: 'read' })
                 });
                 fetchNotifications();

@@ -4,6 +4,7 @@ import React, { createContext, useState, useContext, ReactNode, useEffect, useCa
 import AuthModal from '@/components/features/auth/AuthModal';
 import CreatePostModal from '@/components/features/feed/CreatePostModal';
 import { IUser } from '@/lib/models/User.model';
+import { fetchWithAuth } from '@/lib/utils/fetchWithAuth';
 
 // Interface defining the shape of our global application context
 // This provides type safety for all components consuming the context
@@ -33,25 +34,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [isCreatePostModalOpen, setIsCreatePostModalOpen] = useState<boolean>(false);
   const [editingPost, setEditingPost] = useState<any | null>(null);
 
-  // fetchUser: Authenticates the user using the stored token
+  // fetchUser: Authenticates the user using the HttpOnly cookie (sent automatically)
   // This is wrapped in useCallback to prevent unnecessary re-creations
   const fetchUser = useCallback(async () => {
     setIsUserLoading(true);
-    const token = localStorage.getItem('token');
-
-    // If no token exists, reset user state and stop loading
-    if (!token) {
-      setIsLoggedIn(false);
-      setUser(null);
-      setIsUserLoading(false);
-      return;
-    };
-
     try {
-      // Verify token with backend
-      const res = await fetch('/api/users/me', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      // Cookie is sent automatically — no need to read localStorage or set headers
+      const res = await fetchWithAuth('/api/users/me');
 
       if (res.ok) {
         // Token is valid, update user state
@@ -59,15 +48,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setUser(userData);
         setIsLoggedIn(true);
       } else {
-        // Token invalid or user not found, clear session
-        localStorage.removeItem('token');
+        // Token invalid, expired, or no cookie present
         setIsLoggedIn(false);
         setUser(null);
       }
     } catch (error) {
       console.error('Failed to fetch user', error);
-      // On error, better to be safe and clear potentially bad state
-      localStorage.removeItem('token');
       setIsLoggedIn(false);
       setUser(null);
     } finally {
@@ -79,6 +65,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   useEffect(() => {
     fetchUser();
   }, [fetchUser]);
+
 
   // Modal Control Functions
   const openAuthModal = () => setIsAuthModalOpen(true);

@@ -66,24 +66,33 @@ export async function POST(request: Request) {
             expiresIn: '5h',
         });
 
-        // If it was a redirect (form post), we need to return HTML to save the token and redirect back
+        const cookieValue = [
+            `auth_token=${token}`,
+            'HttpOnly',
+            'Path=/',
+            'SameSite=Lax',
+            `Max-Age=${60 * 60 * 5}`,
+            ...(process.env.NODE_ENV === 'production' ? ['Secure'] : []),
+        ].join('; ');
+
         if (contentType?.includes('application/x-www-form-urlencoded')) {
-            return new Response(
-                `<html>
-                    <body>
-                        <script>
-                            localStorage.setItem('token', '${token}');
-                            window.location.href = '/';
-                        </script>
-                    </body>
-                </html>`,
-                {
-                    headers: { 'Content-Type': 'text/html' },
-                }
+            // FIX: Handle proxies like ngrok properly by observing x-forwarded headers 
+            const proto = request.headers.get('x-forwarded-proto') || 'http';
+            const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'localhost:3000';
+            const baseUrl = `${proto}://${host}`;
+
+            const redirectResponse = NextResponse.redirect(
+                new URL('/', baseUrl),
+                { status: 302 }
             );
+            redirectResponse.headers.set('Set-Cookie', cookieValue);
+            return redirectResponse;
         }
 
-        return NextResponse.json({ token });
+        // FIX: Set cookie on JSON response, no longer return token in body
+        const jsonResponse = NextResponse.json({ success: true });
+        jsonResponse.headers.set('Set-Cookie', cookieValue);
+        return jsonResponse;
 
     } catch (err: any) {
         console.error('Google Auth Error:', err);

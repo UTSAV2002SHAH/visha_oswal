@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { SpinnerIcon } from '../../ui/icons/SpinnerIcon';
+import { fetchWithAuth } from '@/lib/utils/fetchWithAuth';
 
 type RelationType = 'father' | 'mother' | 'spouse' | 'sibling' | 'child';
 
@@ -52,7 +53,7 @@ export const FamilyMemberModal: React.FC<FamilyMemberModalProps> = ({ isOpen, on
         setIsSearching(true);
         setFoundUser(null);
         try {
-            const res = await fetch(`/api/users/profile/${searchUsername.trim()}`);
+            const res = await fetchWithAuth(`/api/users/profile/${searchUsername.trim()}`);
             if (res.ok) {
                 const data = await res.json();
                 setFoundUser(data);
@@ -93,7 +94,6 @@ export const FamilyMemberModal: React.FC<FamilyMemberModalProps> = ({ isOpen, on
 
         setIsLoading(true);
         try {
-            const token = localStorage.getItem('token');
             const endpointMap: Record<RelationType, string> = {
                 father: 'parents',
                 mother: 'parents',
@@ -104,10 +104,9 @@ export const FamilyMemberModal: React.FC<FamilyMemberModalProps> = ({ isOpen, on
 
             const url = `/api/member-profile/family/${endpointMap[relationType]}`;
 
-            const res = await fetch(url, {
+            const res = await fetchWithAuth(url, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(payload)

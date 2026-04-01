@@ -108,7 +108,11 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = (props) => {
             <div className="lg:col-span-2 space-y-6">
 
                 {/* PERSONAL DETAILS SECTION */}
-                <ProfilePersonalDetails isOwnProfile={!!isOwnProfile} onUpdate={onUpdate} />
+                <ProfilePersonalDetails 
+                    isOwnProfile={!!isOwnProfile} 
+                    data={profileData.extendedProfile?.personal} 
+                    onUpdate={onUpdate} 
+                />
 
                 {/* ABOUT SECTION */}
                 <ProfileSectionCard

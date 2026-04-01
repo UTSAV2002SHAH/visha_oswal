@@ -45,12 +45,16 @@ export async function GET(
         if (memberProfile) {
             // Pick only non-sensitive fields to expose publicly
             responseData.extendedProfile = {
-                gender: memberProfile.personal?.gender,
-                maritalStatus: memberProfile.personal?.maritalStatus,
-                cityOfOrigin: memberProfile.personal?.cityOfOrigin,
-                currentCity: memberProfile.personal?.currentCity,
+                personal: {
+                    fullName: memberProfile.personal?.fullName || foundUser.name,
+                    gender: memberProfile.personal?.gender,
+                    maritalStatus: memberProfile.personal?.maritalStatus,
+                    cityOfOrigin: memberProfile.personal?.cityOfOrigin,
+                    currentCity: memberProfile.personal?.currentCity,
+                    dateOfBirth: memberProfile.personal?.dateOfBirth,
+                    contactNumber: memberProfile.personal?.contactNumber,
+                },
                 family: memberProfile.family || null,
-                // Do NOT expose Contact Number or DOB broadly by default for privacy
             };
         } else {
             responseData.extendedProfile = null;

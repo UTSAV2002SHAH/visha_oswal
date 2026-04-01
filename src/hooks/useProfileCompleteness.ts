@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { isProfileComplete } from '@/utils/profile-validation';
 import { useAppContext } from '@/context/AppContext';
+import { fetchWithAuth } from '@/lib/utils/fetchWithAuth';
 
 export const useProfileCompleteness = () => {
     const { user } = useAppContext();
@@ -16,10 +17,7 @@ export const useProfileCompleteness = () => {
         }
 
         try {
-            const token = localStorage.getItem('token');
-            const res = await fetch('/api/member-profile', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const res = await fetchWithAuth('/api/member-profile');
 
             if (res.ok) {
                 const data = await res.json();

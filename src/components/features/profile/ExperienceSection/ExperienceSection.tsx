@@ -7,6 +7,7 @@ import { Experience } from '@/types/profile';
 import { Company } from '@/components/ui/CompanyAutocomplete';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { formatDate } from '@/utils/profileUtils';
+import { fetchWithAuth } from '@/lib/utils/fetchWithAuth';
 
 interface ExperienceSectionProps {
     experiences: Experience[];
@@ -65,16 +66,14 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({ experience
 
     // API Helpers
     const handleApiCall = async (endpoint: string, method: string, body?: any) => {
-        const token = localStorage.getItem('token');
         const options: RequestInit = {
             method,
             headers: {
-                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
             },
             body: body ? JSON.stringify(body) : undefined,
         };
-        const response = await fetch(endpoint, options);
+        const response = await fetchWithAuth(endpoint, options);
         if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.msg || 'API request failed');

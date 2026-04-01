@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import { fetchWithAuth } from '@/lib/utils/fetchWithAuth';
 
 interface ProfilePostCardProps {
     post: {
@@ -36,12 +37,8 @@ const ProfilePostCard: React.FC<ProfilePostCardProps> = ({ post, onDelete, onEdi
         }
 
         try {
-            const token = localStorage.getItem('token');
-            const res = await fetch(`/api/posts/${post._id}`, {
+            const res = await fetchWithAuth(`/api/posts/${post._id}`, {
                 method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
             });
 
             if (res.ok) {

@@ -3,6 +3,7 @@ import { SpinnerIcon } from '../../ui/icons/SpinnerIcon';
 import { PostThumbnail } from './PostThumbnail';
 import PostDetailModal from './PostDetailModal';
 import { useAppContext } from '@/context/AppContext';
+import { fetchWithAuth } from '@/lib/utils/fetchWithAuth';
 
 interface Post {
     _id: string;
@@ -24,12 +25,7 @@ export const ProfilePosts: React.FC = () => {
 
     const fetchPosts = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await fetch('/api/users/me/posts', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
+            const response = await fetchWithAuth('/api/users/me/posts');
 
             if (!response.ok) {
                 const data = await response.json();

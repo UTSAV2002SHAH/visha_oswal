@@ -3,6 +3,7 @@ import { UserIcon } from '@/components/ui/icons/UserIcon';
 import { useAppContext } from '@/context/AppContext';
 import { SpinnerIcon } from '@/components/ui/icons/SpinnerIcon';
 import { getImageUrl } from '@/lib/image-utils';
+import { fetchWithAuth } from '@/lib/utils/fetchWithAuth';
 
 interface ProfileAvatarProps {
     profilePictureUrl?: string;
@@ -32,14 +33,9 @@ export const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
             return;
         }
 
-        setIsUploading(true);
-        const token = localStorage.getItem('token');
-
         try {
             // 1. Get Presigned URL
-            const uploadRes = await fetch(`/api/upload-url?fileType=${encodeURIComponent(file.type)}&uploadType=profile`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const uploadRes = await fetchWithAuth(`/api/upload-url?fileType=${encodeURIComponent(file.type)}&uploadType=profile`);
 
             if (!uploadRes.ok) throw new Error('Failed to get upload URL');
             const { uploadUrl, key } = await uploadRes.json();
@@ -54,11 +50,10 @@ export const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
             if (!s3Res.ok) throw new Error('Failed to upload image to S3');
 
             // 3. Update User Profile in DB
-            const profileRes = await fetch('/api/users/me', {
+            const profileRes = await fetchWithAuth('/api/users/me', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({ profilePictureUrl: key })
             });

@@ -17,6 +17,7 @@ import { ProfileHeaderSkeleton, ProfileOverviewSkeleton } from '@/components/ui/
 import { ProfileDateSelector } from '@/components/ui/ProfileDateSelector';
 import { ProfileCompletionGuard } from '@/components/shared/ProfileCompletionGuard';
 import { useProfileCompleteness } from '@/hooks/useProfileCompleteness';
+import { fetchWithAuth } from '@/lib/utils/fetchWithAuth';
 
 // Interfaces
 interface Experience {
@@ -105,6 +106,12 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ targetUsername }) => {
     const fetchProfile = async () => {
         setIsLoading(true);
         try {
+            // Reset states before fetching new profile to prevent data leakage from previous view
+            if (targetUsername) {
+                setProfileData(null);
+                setIsOwnProfile(false);
+            }
+
             // Refresh completeness status as well
             refreshCompleteness();
 
@@ -117,7 +124,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ targetUsername }) => {
                     setEditedAboutText(data.about || '');
 
                     // Check if this is the logged-in user's own profile
-                    if (currentUser && data._id === currentUser.id) {
+                    if (currentUser && data.username === currentUser.username) {
                         setIsOwnProfile(true);
                     } else {
                         setIsOwnProfile(false);
@@ -163,26 +170,30 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ targetUsername }) => {
         window.history.pushState({}, '', url.toString());
     };
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        setIsLoggedIn(false);
-        router.push('/');
-        toast.success("Successfully logged out!");
+    const handleLogout = async () => {
+        try {
+            await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+            setIsLoggedIn(false);
+            router.push('/');
+            toast.success("Successfully logged out!");
+        } catch (error) {
+            console.error("Logout failed", error);
+            setIsLoggedIn(false);
+            router.push('/');
+        }
     };
 
     const handleApiCall = async (endpoint: string, method: string, body?: any) => {
-        const token = localStorage.getItem('token');
         const options: RequestInit = {
             method,
             headers: {
-                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
             },
         };
         if (body) {
             options.body = JSON.stringify(body);
         }
-        const response = await fetch(endpoint, options);
+        const response = await fetchWithAuth(endpoint, options);
         if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.msg || 'API request failed');
@@ -455,6 +466,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ targetUsername }) => {
             <main>
                 {activeTab === 'overview' && (
                     <ProfileOverview
+                        key={profileData?._id || targetUsername}
                         profileData={profileData}
                         isAboutEditing={isAboutEditing}
                         editedAboutText={editedAboutText}

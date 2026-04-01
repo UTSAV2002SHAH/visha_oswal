@@ -82,7 +82,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLoginSuccess }) => {
       }
 
       if (mode === 'signin') {
-        localStorage.setItem('token', data.token);
         toast.success('Welcome back!');
         onLoginSuccess();
       } else {
@@ -126,8 +125,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLoginSuccess }) => {
         throw new Error(data.msg || 'Google Sign In Failed');
       }
 
-      localStorage.setItem('token', data.token);
-      toast.success(data.msg || 'Welcome!'); // Data msg might be undefined, fallback
+      // Cookie is set server-side — just trigger the app to refresh user state
+      toast.success('Welcome!');
       onLoginSuccess();
 
     } catch (err: any) {

@@ -8,6 +8,7 @@ import { BellIcon } from '@/components/ui/icons/BellIcon';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { getImageUrl } from '@/lib/image-utils';
 import toast from 'react-hot-toast';
+import { fetchWithAuth } from '@/lib/utils/fetchWithAuth';
 
 // Inline icons
 const ChevronRight = () => (
@@ -31,12 +32,8 @@ export default function SettingsPage() {
 
     useEffect(() => {
         const fetchNotifications = async () => {
-            const token = localStorage.getItem('token');
-            if (!token) return;
             try {
-                const res = await fetch('/api/notifications', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                const res = await fetchWithAuth('/api/notifications');
                 if (res.ok) {
                     const data = await res.json();
                     setNotifications(data);
@@ -50,23 +47,17 @@ export default function SettingsPage() {
     }, []);
 
     const handleNotificationAction = async (notificationId: string, action: 'accept' | 'reject') => {
-        const token = localStorage.getItem('token');
         try {
-            const res = await fetch('/api/notifications', {
+        const res = await fetchWithAuth('/api/notifications', {
                 method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ notificationId, action })
             });
 
             if (res.ok) {
                 toast.success(action === 'accept' ? 'Request accepted!' : 'Request rejected');
                 // Refresh notifications
-                const fetchRes = await fetch('/api/notifications', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                const fetchRes = await fetchWithAuth('/api/notifications');
                 if (fetchRes.ok) {
                     const data = await fetchRes.json();
                     setNotifications(data);
@@ -86,11 +77,10 @@ export default function SettingsPage() {
             router.push('/profile?tab=family');
         }
         if (!notification.isRead) {
-            const token = localStorage.getItem('token');
             try {
-                await fetch('/api/notifications', {
+                await fetchWithAuth('/api/notifications', {
                     method: 'PATCH',
-                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ notificationId: notification._id, action: 'read' })
                 });
                 setUnreadCount(prev => Math.max(0, prev - 1));
@@ -99,9 +89,10 @@ export default function SettingsPage() {
         }
     };
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
         if (!confirm('Are you sure you want to sign out?')) return;
-        localStorage.removeItem('token');
+        // Clear the HttpOnly auth cookie server-side
+        await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
         setIsLoggedIn(false);
         router.push('/');
         toast.success('Logged out successfully');

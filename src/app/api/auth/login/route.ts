@@ -36,7 +36,18 @@ export async function POST(request: Request) {
       expiresIn: '5h',
     });
 
-    return NextResponse.json({ token });
+    const response = NextResponse.json({ success: true });
+
+    // Set JWT as HttpOnly cookie — inaccessible to JavaScript, survives XSS
+    response.cookies.set('auth_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 60 * 60 * 5, // 5 hours in seconds
+    });
+
+    return response;
   } catch (err) {
     console.error(err);
     return NextResponse.json({ msg: 'Server error' }, { status: 500 });

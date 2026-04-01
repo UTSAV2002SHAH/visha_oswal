@@ -6,6 +6,7 @@ import { AboutDisplay } from './AboutDisplay';
 import { AboutEditForm } from './AboutEditForm';
 import { UserIcon } from '@/components/ui/icons/UserIcon';
 import toast from 'react-hot-toast';
+import { fetchWithAuth } from '@/lib/utils/fetchWithAuth';
 
 interface AboutSectionProps {
     initialAbout: string;
@@ -27,11 +28,9 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
 
     const handleSave = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await fetch('/api/users/me', {
+            const response = await fetchWithAuth('/api/users/me', {
                 method: 'PUT',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ about: editedText }),

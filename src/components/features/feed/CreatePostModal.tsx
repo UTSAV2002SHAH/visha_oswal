@@ -5,6 +5,7 @@ import { useAppContext } from '@/context/AppContext';
 import { CloseIcon } from '../../ui/icons/CloseIcon';
 import { SpinnerIcon } from '../../ui/icons/SpinnerIcon';
 import { GalleryIcon } from '../../ui/icons/GalleryIcon';
+import { fetchWithAuth } from '@/lib/utils/fetchWithAuth';
 
 const CreatePostModal: React.FC = () => {
     const { closeCreatePostModal, user, editingPost } = useAppContext();
@@ -32,16 +33,14 @@ const CreatePostModal: React.FC = () => {
         if (!content.trim()) return;
 
         setIsLoading(true);
-        const token = localStorage.getItem('token');
 
         try {
             if (isEdit) {
                 // Update Path
-                const res = await fetch(`/api/posts/${editingPost._id}`, {
+                const res = await fetchWithAuth(`/api/posts/${editingPost._id}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({ content })
                 });
@@ -64,9 +63,7 @@ const CreatePostModal: React.FC = () => {
                 const file = fileInputRef.current.files[0];
 
                 // Step 1: Get Presigned URL
-                const uploadRes = await fetch(`/api/upload-url?fileType=${encodeURIComponent(file.type)}&uploadType=post`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                const uploadRes = await fetchWithAuth(`/api/upload-url?fileType=${encodeURIComponent(file.type)}&uploadType=post`);
 
                 if (!uploadRes.ok) throw new Error('Failed to get upload URL');
                 const { uploadUrl, key } = await uploadRes.json();
@@ -81,11 +78,10 @@ const CreatePostModal: React.FC = () => {
                 if (!s3Res.ok) throw new Error('Failed to upload image to S3');
 
                 // Step 3: Create Post
-                const postRes = await fetch('/api/posts', {
+                const postRes = await fetchWithAuth('/api/posts', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({
                         content,

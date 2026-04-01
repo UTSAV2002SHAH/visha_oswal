@@ -3,6 +3,7 @@ import { verifyAuth } from '@/lib/auth';
 import connectDB from '@/lib/db';
 import User from '@/lib/models/User.model';
 import { S3Service } from '@/lib/s3-service';
+import { UserUpdateSchema } from '@/lib/validations/profile';
 
 // @route   GET api/users/me
 // @desc    Get current user's profile
@@ -32,7 +33,15 @@ export async function PUT(request: NextRequest) {
   try {
     await connectDB();
     const userPayload = verifyAuth(request);
-    const { name, username, headline, city, about, profilePictureUrl, bannerImageUrl, skills } = await request.json();
+    const body = await request.json();
+
+    // Validate input
+    const validatedData = UserUpdateSchema.safeParse(body);
+    if (!validatedData.success) {
+      return NextResponse.json({ msg: 'Invalid user data', errors: validatedData.error.flatten() }, { status: 400 });
+    }
+
+    const { name, username, headline, city, about, profilePictureUrl, bannerImageUrl, skills } = validatedData.data;
 
     // 1. Fetch current user to get old image keys for cleanup
     const currentUser = await User.findById(userPayload.id);

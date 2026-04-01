@@ -3,6 +3,7 @@ import { useAppContext } from '@/context/AppContext';
 import PostCard from '../../PostCard';
 import { SpinnerIcon } from '../../ui/icons/SpinnerIcon';
 import { getImageUrl } from '@/lib/image-utils';
+import { fetchWithAuth } from '@/lib/utils/fetchWithAuth';
 
 interface Post {
     _id: string;
@@ -25,12 +26,7 @@ const UserFeed: React.FC = () => {
 
     const fetchPosts = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const res = await fetch('/api/posts', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
+            const res = await fetchWithAuth('/api/posts');
             if (res.ok) {
                 const data = await res.json();
 
